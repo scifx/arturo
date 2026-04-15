@@ -91,7 +91,7 @@ func codify*(v: VRange): string {.inline.} =
     result = start & ".."
 
     if v.step != 1:
-        result &= " .step: " & $(v.step)
+        result &= " .step: " & $(v.step) & " "
     
     result &= stop
 
