@@ -76,6 +76,25 @@ func reversed*(self: VRange, safe: bool = false): VRange =
             forward: not self.forward
         )
 
+func codify*(v: VRange): string {.inline.} =
+    var start: string
+    var stop: string
+
+    if v.numeric: start = $(v.start)
+    else: start = "'" & $(chr(v.start)) & "'"
+
+    if v.infinite: stop = "∞"
+    else: 
+        if v.numeric: stop = $(v.stop)
+        else: stop = "'" & $(chr(v.stop)) & "'"
+
+    result = start & " .. "
+
+    if v.step != 1:
+        result &= ".step: " & $(v.step) & " "
+    
+    result &= stop
+
 #=======================================
 # Overloads
 #=======================================
@@ -88,12 +107,12 @@ func `$`*(v: VRange): string {.inline.} =
     var stop: string
 
     if v.numeric: start = $(v.start)
-    else: start = "`" & $(chr(v.start)) & "`"
+    else: start = "'" & $(chr(v.start)) & "'"
 
     if v.infinite: stop = "∞"
     else: 
         if v.numeric: stop = $(v.stop)
-        else: stop = "`" & $(chr(v.stop)) & "`"
+        else: stop = "'" & $(chr(v.stop)) & "'"
 
     result = start & ".." & stop
 

@@ -604,6 +604,8 @@ proc codify*(v: Value, pretty = false, unwrapped = false, level: int=0, isLast: 
         of Color        : result &= $(v.l)
         of Date         : result &= fmt("to :date \"{v.eobj}\"")
 
+        of Range        : result &= codify(v.rng)
+
         of Inline, Block:
             if not (pretty and unwrapped and level==0):
                 if v.kind==Inline: result &= "("
