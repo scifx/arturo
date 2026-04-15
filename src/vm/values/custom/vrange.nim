@@ -88,7 +88,7 @@ func codify*(v: VRange): string {.inline.} =
         if v.numeric: stop = $(v.stop)
         else: stop = "'" & $(chr(v.stop)) & "'"
 
-    result = start & ".."
+    result = start & " .. "
 
     if v.step != 1:
         result &= " .step: " & $(v.step) & " "
