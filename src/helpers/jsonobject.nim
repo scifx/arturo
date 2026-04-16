@@ -63,7 +63,7 @@ proc generateJsonNode*(n: Value): JsonNode =
         of ErrorKind    : result = newJString($(n.errKind))
         of Regex        : result = newJString($(n.rx))
         of Color        : result = newJString($(n))
-        of Date         : discard
+        of Date         : result = newJString($(n))
         of Binary       : discard
         of Inline,
            Block        : 
