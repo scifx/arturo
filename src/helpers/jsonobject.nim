@@ -148,7 +148,7 @@ when defined(WEB):
             of Quantity     : result = toJs($(n.q))
             of Regex        : result = toJs($(n.rx))
             of Color        : discard
-            of Date         : discard
+            of Date         : result = toJs($(n))
             of Binary       : discard
             of Inline,
                Block        : 
