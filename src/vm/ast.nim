@@ -680,7 +680,19 @@ proc processBlock*(
                         PipeParent = newCall
                         lastChild.children[0].replaceNode(newCall)
                         target = lastChild
-                    
+
+                        target.rollThrough()
+                    elif lastChild.kind == BuiltinCall and lastChild.op == opSet:
+                        let valueIdx = lastChild.children.len - 1
+                        toWrap = copyNode(lastChild.children[valueIdx])
+
+                        let newCall = getCallNode(nextNode.s, funcArity)
+                        newCall.addChild(toWrap)
+
+                        PipeParent = newCall
+                        lastChild.children[valueIdx].replaceNode(newCall)
+                        target = lastChild
+
                         target.rollThrough()
                     else:
                     
