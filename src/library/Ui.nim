@@ -92,7 +92,7 @@ proc defineModule*(moduleName: string) =
 
                 showAlertDialog(x.s, y.s, alertIcon)
 
-    builtinUnless NOCLIPBOARD, "clip",
+    builtinWhen CLIPBOARD, "clip",
         alias       = unaliased, 
         op          = opNop,
         rule        = PrefixPrecedence,
