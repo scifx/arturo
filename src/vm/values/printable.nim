@@ -190,7 +190,7 @@ proc `$`*(v: Value): string {.inline.} =
             result &= "(" & fmt("{cast[uint](v.mmain):#X}") & ")"
 
         of Database:
-            when not defined(NOSQLITE):
+            when defined(SQLITE):
                 if v.dbKind==SqliteDatabase: result = fmt("<database>({cast[uint](v.sqlitedb):#X})")
                 #elif v.dbKind==MysqlDatabase: result = fmt("[mysql db] {cast[uint](v.mysqldb):#X}")
         
@@ -457,7 +457,7 @@ proc dump*(v: Value, level: int=0, isLast: bool=false, muted: bool=false, prepen
             dumpBlockEnd()
 
         of Database     :
-            when not defined(NOSQLITE):
+            when defined(SQLITE):
                 if v.dbKind==SqliteDatabase: stdoutWrite fmt("[sqlite db] {cast[uint](v.sqlitedb):#X}")
                 #elif v.dbKind==MysqlDatabase: stdout.write fmt("[mysql db] {cast[uint](v.mysqldb):#X}")
 
@@ -603,6 +603,8 @@ proc codify*(v: Value, pretty = false, unwrapped = false, level: int=0, isLast: 
         of Regex        : result &= "{/" & $(v.rx) & "/}"
         of Color        : result &= $(v.l)
         of Date         : result &= fmt("to :date \"{v.eobj}\"")
+
+        of Range        : result &= codify(v.rng)
 
         of Inline, Block:
             if not (pretty and unwrapped and level==0):

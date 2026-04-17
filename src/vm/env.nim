@@ -19,10 +19,8 @@ when defined(GMP):
     import extras/gmp
     import extras/mpfr
 
-when not defined(NOSQLITE):
+when defined(SQLITE):
     import extras/db_connector/sqlite3
-
-import pcre
 
 import os, strutils, tables, times, system
 
@@ -96,15 +94,12 @@ proc parseCmdlineArguments*(): ValueDict =
 
 proc getSystemInfo*(): ValueDict =
     ## return system info as a Dictionary value
-    var versionStr = ArturoVersion
-    versionStr &= "+" & ArturoBuild
-    if ArturoMetadata != "":
-        versionStr &= "." & ArturoMetadata
     try:
         result = {
             "author"    : newString("Yanis Zafirópulos"),
             "copyright" : newString("(c) 2019-2026"),
-            "version"   : newVersion(versionStr),
+            "version"   : newVersion(ArturoVersionString),
+            "codename"  : newString(ArturoCodename),
             "built"     : newDate(parse(CompileDate & " " & CompileTime, "yyyy-MM-dd HH:mm:ss")),
             "deps"      : newDictionary(),
             "binary"    : 
@@ -113,7 +108,7 @@ proc getSystemInfo*(): ValueDict =
                 else:
                     newString(getAppFilename()),
             "cpu"       : newDictionary(),
-            "os"        : newString(systemOs),
+            "os"        : newLiteral(systemOs),
             "hostname"  : newString(""),
             "release"   : 
                 when defined(MINI):
@@ -139,11 +134,8 @@ proc getSystemInfo*(): ValueDict =
             result["deps"].d["gmp"] = newVersion($(gmpVersion))
             result["deps"].d["mpfr"] = newVersion($(mpfr_get_version()))
 
-        when not defined(NOSQLITE):
+        when defined(SQLITE):
             result["deps"].d["sqlite"] = newVersion($(sqlite3.libversion()))
-
-        let pcreVersion = ($(pcre.version())).split(" ")[0] & ".0"
-        result["deps"].d["pcre"] = newVersion(pcreVersion)
         
     except CatchableError:
         discard

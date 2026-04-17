@@ -494,39 +494,39 @@ proc defineModule*(moduleName: string) =
         returns     = {Dictionary},
         example     = """
             inspect sys
-            ;[ :dictionary
-            ;        author     :        Yanis Zafirópulos :string
-            ;        copyright  :        (c) 2019-2026 :string
-            ;        version    :        0.9.84-alpha+3126 :version
-            ;        built      :        [ :date
-            ;                hour        :                16 :integer
-            ;                minute      :                19 :integer
-            ;                second      :                25 :integer
-            ;                nanosecond  :                0 :integer
-            ;                day         :                12 :integer
-            ;                Day         :                Wednesday :string
-            ;                days        :                163 :integer
-            ;                month       :                6 :integer
-            ;                Month       :                June :string
-            ;                year        :                2024 :integer
-            ;                utc         :                -7200 :integer
-            ;        ]
-            ;        deps       :        [ :dictionary
-            ;                gmp     :                6.3.0 :version
-            ;                mpfr    :                4.2.1 :version
-            ;                sqlite  :                3.39.5 :version
-            ;                pcre    :                8.45.0 :version
-            ;        ]
-            ;        binary     :        /Users/drkameleon/.arturo/bin/arturo :string
-            ;        cpu        :        [ :dictionary
-            ;                arch    :                amd64 :literal
-            ;                endian  :                little :literal
-            ;                cores   :                8 :integer
-            ;        ]
-            ;        os         :        macos :string
-            ;        hostname   :        drkameleons-MBP.home :string
-            ;        release    :        full :literal
-            ;]
+            ; [ :dictionary
+            ;         author     :        Yanis Zafirópulos :string
+            ;         copyright  :        (c) 2019-2026 :string
+            ;         version    :        0.10.0-dev+3454 :version
+            ;         codename   :         :string
+            ;         built      :        [ :date
+            ;                 hour        :                12 :integer
+            ;                 minute      :                56 :integer
+            ;                 second      :                12 :integer
+            ;                 nanosecond  :                0 :integer
+            ;                 day         :                13 :integer
+            ;                 Day         :                Tuesday :string
+            ;                 days        :                12 :integer
+            ;                 month       :                1 :integer
+            ;                 Month       :                January :string
+            ;                 year        :                2026 :integer
+            ;                 utc         :                -3600 :integer
+            ;         ]
+            ;         deps       :        [ :dictionary
+            ;                 gmp     :                6.3.0 :version
+            ;                 mpfr    :                4.2.1 :version
+            ;                 sqlite  :                3.43.2 :version
+            ;         ]
+            ;         binary     :        /Users/drkameleon/.arturo/bin/arturo :string
+            ;         cpu        :        [ :dictionary
+            ;                 arch    :                amd64 :literal
+            ;                 endian  :                little :literal
+            ;                 cores   :                8 :integer
+            ;         ]
+            ;         os         :        macos :literal
+            ;         hostname   :        drkameleons-MacBook-Pro.local :string
+            ;         release    :        full :literal
+            ; ]
         """:
             #=======================================================
             push newDictionary(getSystemInfo())
@@ -540,25 +540,20 @@ proc defineModule*(moduleName: string) =
             args        = {
                 "id"    : {Integer}
             },
-            attrs       = {
-                "code"  : ({Integer},"use given error code"),
-            },
+            attrs       = NoAttrs,
             returns     = {Nothing},
             example     = """
                 ; start process
                 pid: execute.async "someProcessThatDoesSomethingInTheBackground"
 
                 ; wait for 5 seconds
-                pause 5000 
+                pause 5000
 
                 ; terminate background process
                 terminate pid
             """:
                 #=======================================================
-                var errCode = QuitSuccess
                 let pid = x.i
-                if checkAttr("code"):
-                    errCode = aCode.i
 
                 # check if it's a process that has been
                 # created by us
@@ -575,9 +570,14 @@ proc defineModule*(moduleName: string) =
                     # if it's an external process,
                     # proceed with its termination
                     when defined(windows):
-                        discard terminateProcess(pid, errCode)
+                        # TerminateProcess needs a HANDLE, not a PID
+                        let hProc = openProcess(PROCESS_TERMINATE, WINBOOL(0), DWORD(pid))
+                        if hProc != 0:
+                            discard terminateProcess(hProc, DWORD(QuitSuccess))
+                            discard closeHandle(hProc)
                     else:
-                        sendSignal(int32(pid), errCode)
+                        # send SIGTERM; signal 0 would only probe existence
+                        sendSignal(int32(pid), 15)
 
     #----------------------------
     # Predicates

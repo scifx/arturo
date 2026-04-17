@@ -23,7 +23,7 @@
     
 import vm/lib
 
-when not defined(NOWEBVIEW):
+when defined(WEBVIEW):
     import algorithm, hashes, os, tables
 
     import helpers/objects
@@ -32,17 +32,17 @@ when not defined(NOWEBVIEW):
 
     import vm/[errors, exec, parse, values/custom/verror]
 
-when not defined(NOCLIPBOARD):
+when defined(CLIPBOARD):
     import helpers/clipboard
 
-when not defined(NODIALOGS):
+when defined(DIALOGS):
     import helpers/dialogs
 
 #=======================================
 # Variables
 #=======================================
 
-when (not defined(WEB)) and not defined(NOWEBVIEW):
+when (not defined(WEB)) and defined(WEBVIEW):
     var
         ActiveWindow: Value = VNULL
 
@@ -56,7 +56,7 @@ proc defineModule*(moduleName: string) =
     # Functions
     #----------------------------
 
-    when not defined(NODIALOGS):
+    when defined(DIALOGS):
         
         builtin "alert",
             alias       = unaliased,
@@ -108,7 +108,7 @@ proc defineModule*(moduleName: string) =
             #=======================================================
             setClipboard(x.s)
 
-    when not defined(NODIALOGS):
+    when defined(DIALOGS):
 
         builtin "dialog",
             alias       = unaliased, 
@@ -211,7 +211,7 @@ proc defineModule*(moduleName: string) =
                 else:
                     push newLogical(getBooleanDialogResult(popupType, res))
 
-    when not defined(NOCLIPBOARD):
+    when defined(CLIPBOARD):
 
         builtin "unclip",
             alias       = unaliased, 
@@ -232,7 +232,7 @@ proc defineModule*(moduleName: string) =
                 #=======================================================
                 push newString(getClipboard())
 
-    when not defined(NOWEBVIEW):
+    when defined(WEBVIEW):
 
         builtin "webview",
             alias       = unaliased, 
