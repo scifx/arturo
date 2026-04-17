@@ -226,245 +226,245 @@ proc defineModule*(moduleName: string) =
             #=======================================================
             push newString(getClipboard())
 
-    when defined(WEBVIEW):
+    builtinWhen WEBVIEW, "webview",
+        alias       = unaliased, 
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "show webview window with given url or html source",
+        args        = {
+            "content"   : {String,Literal}
+        },
+        attrs       = {
+            "title"     : ({String},"set window title"),
+            "width"     : ({Integer},"set window width"),
+            "height"    : ({Integer},"set window height"),
+            "fixed"     : ({Logical},"window shouldn't be resizable"),
+            "maximized" : ({Logical},"start in maximized mode"),
+            "fullscreen": ({Logical},"start in fullscreen mode"),
+            "borderless": ({Logical},"show as borderless window"),
+            "topmost"   : ({Logical},"set window as always-on-top"),
+            "debug"     : ({Logical},"add inspector console"),
+            "on"        : ({Dictionary},"execute code on specific events"),
+            "inject"    : ({String},"inject JS code on webview initialization")
+        },
+        returns     = {Nothing},
+        example     = """
+        webview "Hello world!"
+        ; (opens a webview windows with "Hello world!")
+        ..........
+        webview .width:  200 
+                .height: 300
+                .title:  "My webview app"
+        ; (opens a webview with given attributes)
+        ---
+            <h1>This is my webpage</h1>
+            <p>
+                This is some content
+            </p>
+        """:
+            #=======================================================
+            var title = "Arturo"
+            var width = 640
+            var height = 480
+            var fixed = (hadAttr("fixed"))
+            var maximized = (hadAttr("maximized"))
+            var fullscreen = (hadAttr("fullscreen"))
+            var borderless = (hadAttr("borderless"))
+            var topmost = (hadAttr("topmost"))
+            var withDebug = (hadAttr("debug"))
+            var inject: string
+            var on: ValueDict
 
-        builtin "webview",
-            alias       = unaliased, 
-            op          = opNop,
-            rule        = PrefixPrecedence,
-            description = "show webview window with given url or html source",
-            args        = {
-                "content"   : {String,Literal}
-            },
-            attrs       = {
-                "title"     : ({String},"set window title"),
-                "width"     : ({Integer},"set window width"),
-                "height"    : ({Integer},"set window height"),
-                "fixed"     : ({Logical},"window shouldn't be resizable"),
-                "maximized" : ({Logical},"start in maximized mode"),
-                "fullscreen": ({Logical},"start in fullscreen mode"),
-                "borderless": ({Logical},"show as borderless window"),
-                "topmost"   : ({Logical},"set window as always-on-top"),
-                "debug"     : ({Logical},"add inspector console"),
-                "on"        : ({Dictionary},"execute code on specific events"),
-                "inject"    : ({String},"inject JS code on webview initialization")
-            },
-            returns     = {Nothing},
-            example     = """
-            webview "Hello world!"
-            ; (opens a webview windows with "Hello world!")
-            ..........
-            webview .width:  200 
-                    .height: 300
-                    .title:  "My webview app"
-            ; (opens a webview with given attributes)
-            ---
-                <h1>This is my webpage</h1>
-                <p>
-                    This is some content
-                </p>
-            """:
-                #=======================================================
-                var title = "Arturo"
-                var width = 640
-                var height = 480
-                var fixed = (hadAttr("fixed"))
-                var maximized = (hadAttr("maximized"))
-                var fullscreen = (hadAttr("fullscreen"))
-                var borderless = (hadAttr("borderless"))
-                var topmost = (hadAttr("topmost"))
-                var withDebug = (hadAttr("debug"))
-                var inject: string
-                var on: ValueDict
-
-                if checkAttr("title"): title = aTitle.s
-                if checkAttr("width"): width = aWidth.i
-                if checkAttr("height"): height = aHeight.i
-                if checkAttr("inject"): inject = aInject.s
-                
-                if checkAttr("on"): on = aOn.d
-                else: on = newOrderedTable[string,Value]()
-
-                var content = x.s
-
-                let wv: Webview = newWebview(
-                    title       = title, 
-                    content     = content, 
-                    width       = width, 
-                    height      = height, 
-                    resizable   = not fixed, 
-                    maximized   = maximized,
-                    fullscreen  = fullscreen,
-                    borderless  = borderless,
-                    topmost     = topmost,
-                    debug       = withDebug,
-                    initializer = inject,
-                    callHandler = proc (call: WebviewCallKind, value: Value): Value =
-                        result = VNULL
-                        if call==FunctionCall:
-                            if SymExists(value.d["method"].s) and GetSym(value.d["method"].s).kind==Function:
-                                let prevSP = SP
-
-                                let fun = GetSym(value.d["method"].s)
-                                for v in value.d["args"].a.reversed:
-                                    push(v)
-
-                                if fun.fnKind==UserFunction:
-                                    let fid = hash(value.d["method"].s)
-                                    execFunction(fun, fid)
-                                else:
-                                    fun.action()()
-
-                                if SP > prevSP:
-                                    result = stack.pop()
-
-                        elif call==ExecuteCode:
-                            try:
-                                let parsed = doParse(value.s, isFile=false)
-                                let prevSP = SP
-                                if not isNil(parsed):
-                                    execUnscoped(parsed)
-                                if SP > prevSP:
-                                    result = stack.pop()
-                            except VError as e:
-                                showError(e)
-                            except CatchableError, Defect:
-                                let e = getCurrentException()
-                                showError(VError(e))
-                            
-                        elif call==WebviewEvent:
-                            if (let onEvent = on.getOrDefault(value.s, nil); not onEvent.isNil):
-                                execUnscoped(onEvent)
-                        else:
-                            discard
-                )
-
-                builtin "eval",
-                    alias       = unaliased, 
-                    op          = opNop,
-                    rule        = PrefixPrecedence,
-                    description = "Evaluate JavaScript code in active webview",
-                    args        = {
-                        "js": {String}
-                    },
-                    attrs       = NoAttrs,
-                    returns     = {Integer,Nothing},
-                    example     = """
-                    """:
-                        #=======================================================
-                        echo "in old eval: " & $(x.s)
-                        wv.evaluate(x.s)
-
-                # necessary so that "__webviewWindow" is available
-                execInternal("Ui/window")
-
-                let emptyvarr: ValueArray = @[]
-                ActiveWindow = generateNewObject(getType("__webviewWindow"),emptyvarr)
-                ActiveWindow.o["title"] = newString(title)
-                ActiveWindow.o["maximizable?"] = newLogical(true)
-                ActiveWindow.o["minimizable?"] = newLogical(true)
-                ActiveWindow.o["topmost?"] = newLogical(topmost)
-
-                ActiveWindow.o["_setTitle"] = adhocPrivate({"title": {String}}, NoAttrs):
-                    push(newLogical(webview_set_title(wv, cstring(x.s)) == OK))
-
-                ActiveWindow.o["_isVisible"] = adhocPrivate(NoArgs, NoAttrs):
-                    push(newLogical(wv.getWindow().isVisible()))
-
-                ActiveWindow.o["_isFocused"] = adhocPrivate(NoArgs, NoAttrs):
-                    push(newLogical(wv.getWindow().isFocused()))
-
-                ActiveWindow.o["_isFullscreen"] = adhocPrivate(NoArgs, NoAttrs):
-                    push(newLogical(wv.getWindow().isFullscreen()))
-
-                ActiveWindow.o["_isMaximized"] = adhocPrivate(NoArgs, NoAttrs):
-                    push(newLogical(wv.getWindow().isMaximized()))
-
-                ActiveWindow.o["_maximize"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().maximize()
-                
-                ActiveWindow.o["_unmaximize"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().unmaximize()
-
-                ActiveWindow.o["_isMinimized"] = adhocPrivate(NoArgs, NoAttrs):
-                    push(newLogical(wv.getWindow().isMinimized()))
-
-                ActiveWindow.o["_minimize"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().minimize()
-                
-                ActiveWindow.o["_unminimize"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().unminimize()
+            if checkAttr("title"): title = aTitle.s
+            if checkAttr("width"): width = aWidth.i
+            if checkAttr("height"): height = aHeight.i
+            if checkAttr("inject"): inject = aInject.s
             
-                ActiveWindow.o["_fullscreen"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().fullscreen()
-            
-                ActiveWindow.o["_unfullscreen"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().unfullscreen()
+            if checkAttr("on"): on = aOn.d
+            else: on = newOrderedTable[string,Value]()
 
-                ActiveWindow.o["_topmost"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().set_topmost_window()
-            
-                ActiveWindow.o["_untopmost"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().unset_topmost_window()
+            var content = x.s
 
-                ActiveWindow.o["_getSize"] = adhocPrivate(NoArgs, NoAttrs):
-                    let sz = wv.getWindow().getSize()
-                    push(newBlock(@[newInteger(sz.width), newInteger(sz.height)]))
+            let wv: Webview = newWebview(
+                title       = title, 
+                content     = content, 
+                width       = width, 
+                height      = height, 
+                resizable   = not fixed, 
+                maximized   = maximized,
+                fullscreen  = fullscreen,
+                borderless  = borderless,
+                topmost     = topmost,
+                debug       = withDebug,
+                initializer = inject,
+                callHandler = proc (call: WebviewCallKind, value: Value): Value =
+                    result = VNULL
+                    if call==FunctionCall:
+                        if SymExists(value.d["method"].s) and GetSym(value.d["method"].s).kind==Function:
+                            let prevSP = SP
 
-                ActiveWindow.o["_setSize"] = adhocPrivate({"size": {Block}}, NoAttrs):
-                    wv.getWindow().setSize(WindowSize(width: x.a[0].i, height: x.a[1].i))
+                            let fun = GetSym(value.d["method"].s)
+                            for v in value.d["args"].a.reversed:
+                                push(v)
 
-                ActiveWindow.o["_getMinSize"] = adhocPrivate(NoArgs, NoAttrs):
-                    let sz = wv.getWindow().getMinSize()
-                    push(newBlock(@[newInteger(sz.width), newInteger(sz.height)]))
+                            if fun.fnKind==UserFunction:
+                                let fid = hash(value.d["method"].s)
+                                execFunction(fun, fid)
+                            else:
+                                fun.action()()
 
-                ActiveWindow.o["_setMinSize"] = adhocPrivate({"size": {Block}}, NoAttrs):
-                    wv.getWindow().setMinSize(WindowSize(width: x.a[0].i, height: x.a[1].i))
+                            if SP > prevSP:
+                                result = stack.pop()
 
-                ActiveWindow.o["_getMaxSize"] = adhocPrivate(NoArgs, NoAttrs):
-                    let sz = wv.getWindow().getMaxSize()
-                    push(newBlock(@[newInteger(sz.width), newInteger(sz.height)]))
+                    elif call==ExecuteCode:
+                        try:
+                            let parsed = doParse(value.s, isFile=false)
+                            let prevSP = SP
+                            if not isNil(parsed):
+                                execUnscoped(parsed)
+                            if SP > prevSP:
+                                result = stack.pop()
+                        except VError as e:
+                            showError(e)
+                        except CatchableError, Defect:
+                            let e = getCurrentException()
+                            showError(VError(e))
+                        
+                    elif call==WebviewEvent:
+                        if (let onEvent = on.getOrDefault(value.s, nil); not onEvent.isNil):
+                            execUnscoped(onEvent)
+                    else:
+                        discard
+            )
 
-                ActiveWindow.o["_setMaxSize"] = adhocPrivate({"size": {Block}}, NoAttrs):
-                    wv.getWindow().setMaxSize(WindowSize(width: x.a[0].i, height: x.a[1].i))
-
-                ActiveWindow.o["_getPosition"] = adhocPrivate(NoArgs, NoAttrs):
-                    let pos = wv.getWindow().getPosition()
-                    push(newBlock(@[newInteger(pos.x), newInteger(pos.y)]))
-
-                ActiveWindow.o["_setPosition"] = adhocPrivate({"pos": {Block}}, NoAttrs):
-                    wv.getWindow().setPosition(WindowPosition(x: x.a[0].i, y: x.a[1].i))
-
-                ActiveWindow.o["center"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().center()
-
-                ActiveWindow.o["_show"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().show()
-                    
-                ActiveWindow.o["_hide"] = adhocPrivate(NoArgs, NoAttrs):
-                    wv.getWindow().hide()
-
-                ActiveWindow.o["_setFocused"] = adhocPrivate({"val": {Logical}}, NoAttrs):
-                    wv.getWindow().setFocused(isTrue(x))
-
-                ActiveWindow.o["_setClosable"] = adhocPrivate({"val": {Logical}}, NoAttrs):
-                    wv.getWindow().setClosable(isTrue(x))
-
-                ActiveWindow.o["_setMaximizable"] = adhocPrivate({"val": {Logical}}, NoAttrs):
-                    wv.getWindow().setMaximizable(isTrue(x))
-
-                ActiveWindow.o["_setMinimizable"] = adhocPrivate({"val": {Logical}}, NoAttrs):
-                    wv.getWindow().setMinimizable(isTrue(x))
-                
-                ActiveWindow.o["close"] = adhocPrivate(NoArgs, NoAttrs):
-                    push(newLogical(wv.webview_terminate() == OK))
-
-                ActiveWindow.o["evaluate"] = adhocPrivate({"code": {String}}, NoAttrs):
+            builtin "eval",
+                alias       = unaliased, 
+                op          = opNop,
+                rule        = PrefixPrecedence,
+                description = "Evaluate JavaScript code in active webview",
+                args        = {
+                    "js": {String}
+                },
+                attrs       = NoAttrs,
+                returns     = {Integer,Nothing},
+                example     = """
+                """:
+                    #=======================================================
+                    echo "in old eval: " & $(x.s)
                     wv.evaluate(x.s)
 
-                SetSym("window", ActiveWindow)
+            # necessary so that "__webviewWindow" is available
+            execInternal("Ui/window")
 
-                wv.show()
+            let emptyvarr: ValueArray = @[]
+            ActiveWindow = generateNewObject(getType("__webviewWindow"),emptyvarr)
+            ActiveWindow.o["title"] = newString(title)
+            ActiveWindow.o["maximizable?"] = newLogical(true)
+            ActiveWindow.o["minimizable?"] = newLogical(true)
+            ActiveWindow.o["topmost?"] = newLogical(topmost)
+
+            ActiveWindow.o["_setTitle"] = adhocPrivate({"title": {String}}, NoAttrs):
+                push(newLogical(webview_set_title(wv, cstring(x.s)) == OK))
+
+            ActiveWindow.o["_isVisible"] = adhocPrivate(NoArgs, NoAttrs):
+                push(newLogical(wv.getWindow().isVisible()))
+
+            ActiveWindow.o["_isFocused"] = adhocPrivate(NoArgs, NoAttrs):
+                push(newLogical(wv.getWindow().isFocused()))
+
+            ActiveWindow.o["_isFullscreen"] = adhocPrivate(NoArgs, NoAttrs):
+                push(newLogical(wv.getWindow().isFullscreen()))
+
+            ActiveWindow.o["_isMaximized"] = adhocPrivate(NoArgs, NoAttrs):
+                push(newLogical(wv.getWindow().isMaximized()))
+
+            ActiveWindow.o["_maximize"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().maximize()
+            
+            ActiveWindow.o["_unmaximize"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().unmaximize()
+
+            ActiveWindow.o["_isMinimized"] = adhocPrivate(NoArgs, NoAttrs):
+                push(newLogical(wv.getWindow().isMinimized()))
+
+            ActiveWindow.o["_minimize"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().minimize()
+            
+            ActiveWindow.o["_unminimize"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().unminimize()
+        
+            ActiveWindow.o["_fullscreen"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().fullscreen()
+        
+            ActiveWindow.o["_unfullscreen"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().unfullscreen()
+
+            ActiveWindow.o["_topmost"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().set_topmost_window()
+        
+            ActiveWindow.o["_untopmost"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().unset_topmost_window()
+
+            ActiveWindow.o["_getSize"] = adhocPrivate(NoArgs, NoAttrs):
+                let sz = wv.getWindow().getSize()
+                push(newBlock(@[newInteger(sz.width), newInteger(sz.height)]))
+
+            ActiveWindow.o["_setSize"] = adhocPrivate({"size": {Block}}, NoAttrs):
+                wv.getWindow().setSize(WindowSize(width: x.a[0].i, height: x.a[1].i))
+
+            ActiveWindow.o["_getMinSize"] = adhocPrivate(NoArgs, NoAttrs):
+                let sz = wv.getWindow().getMinSize()
+                push(newBlock(@[newInteger(sz.width), newInteger(sz.height)]))
+
+            ActiveWindow.o["_setMinSize"] = adhocPrivate({"size": {Block}}, NoAttrs):
+                wv.getWindow().setMinSize(WindowSize(width: x.a[0].i, height: x.a[1].i))
+
+            ActiveWindow.o["_getMaxSize"] = adhocPrivate(NoArgs, NoAttrs):
+                let sz = wv.getWindow().getMaxSize()
+                push(newBlock(@[newInteger(sz.width), newInteger(sz.height)]))
+
+            ActiveWindow.o["_setMaxSize"] = adhocPrivate({"size": {Block}}, NoAttrs):
+                wv.getWindow().setMaxSize(WindowSize(width: x.a[0].i, height: x.a[1].i))
+
+            ActiveWindow.o["_getPosition"] = adhocPrivate(NoArgs, NoAttrs):
+                let pos = wv.getWindow().getPosition()
+                push(newBlock(@[newInteger(pos.x), newInteger(pos.y)]))
+
+            ActiveWindow.o["_setPosition"] = adhocPrivate({"pos": {Block}}, NoAttrs):
+                wv.getWindow().setPosition(WindowPosition(x: x.a[0].i, y: x.a[1].i))
+
+            ActiveWindow.o["center"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().center()
+
+            ActiveWindow.o["_show"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().show()
+                
+            ActiveWindow.o["_hide"] = adhocPrivate(NoArgs, NoAttrs):
+                wv.getWindow().hide()
+
+            ActiveWindow.o["_setFocused"] = adhocPrivate({"val": {Logical}}, NoAttrs):
+                wv.getWindow().setFocused(isTrue(x))
+
+            ActiveWindow.o["_setClosable"] = adhocPrivate({"val": {Logical}}, NoAttrs):
+                wv.getWindow().setClosable(isTrue(x))
+
+            ActiveWindow.o["_setMaximizable"] = adhocPrivate({"val": {Logical}}, NoAttrs):
+                wv.getWindow().setMaximizable(isTrue(x))
+
+            ActiveWindow.o["_setMinimizable"] = adhocPrivate({"val": {Logical}}, NoAttrs):
+                wv.getWindow().setMinimizable(isTrue(x))
+            
+            ActiveWindow.o["close"] = adhocPrivate(NoArgs, NoAttrs):
+                push(newLogical(wv.webview_terminate() == OK))
+
+            ActiveWindow.o["evaluate"] = adhocPrivate({"code": {String}}, NoAttrs):
+                wv.evaluate(x.s)
+
+            SetSym("window", ActiveWindow)
+
+            wv.show()
+
+    when defined(WEBVIEW):
 
         constant "window",
             alias       = unaliased,
