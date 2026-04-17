@@ -207,26 +207,24 @@ proc defineModule*(moduleName: string) =
             else:
                 push newLogical(getBooleanDialogResult(popupType, res))
 
-    when defined(CLIPBOARD):
-
-        builtin "unclip",
-            alias       = unaliased, 
-            op          = opNop,
-            rule        = PrefixPrecedence,
-            description = "get clipboard content",
-            args        = NoArgs,
-            attrs       = NoAttrs,
-            returns     = {String},
-            example     = """
+    builtinWhen CLIPBOARD, "unclip",
+        alias       = unaliased,
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "get clipboard content",
+        args        = NoArgs,
+        attrs       = NoAttrs,
+        returns     = {String},
+        example     = """
             ; paste something into the clipboard (optionally)
             clip "this is something to be pasted into the clipboard"
 
             ; now, let's fetch whatever there is in the clipboard
-            unclip 
+            unclip
             ; => "this is something to be pasted into the clipboard"
-            """:
-                #=======================================================
-                push newString(getClipboard())
+        """:
+            #=======================================================
+            push newString(getClipboard())
 
     when defined(WEBVIEW):
 
