@@ -105,25 +105,23 @@ proc defineModule*(moduleName: string) =
             # elif dbKind == MysqlDatabase:
             #     push(newDatabase(openMysqlDb(dbName)))
 
-    when defined(SQLITE):
-
-        builtin "query",
-            alias       = unaliased, 
-            op          = opNop,
-            rule        = PrefixPrecedence,
-            description = "execute command or block of commands in given database and get returned rows",
-            args        = {
-                "database"  : {Database},
-                "commands"  : {String,Block}
-            },
-            attrs       = {
-                "id"    : ({Logical},"return last INSERT id"),
-                "with"  : ({Block},"use arguments for parametrized statement")
-            },
-            returns     = {Integer,Block,Null},
-            example     = """
+    builtinWhen SQLITE, "query",
+        alias       = unaliased,
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "execute command or block of commands in given database and get returned rows",
+        args        = {
+            "database"  : {Database},
+            "commands"  : {String,Block}
+        },
+        attrs       = {
+            "id"    : ({Logical},"return last INSERT id"),
+            "with"  : ({Block},"use arguments for parametrized statement")
+        },
+        returns     = {Integer,Block,Null},
+        example     = """
             db: open "my.db"    ; opens an SQLite database named 'my.db'
-            
+
             ; perform a simple query
             print query db "SELECT * FROM users"
 
@@ -133,25 +131,25 @@ proc defineModule*(moduleName: string) =
 
             ; perform a safe query with given parameters
             print query db .with: ["johndoe"] {!sql SELECT * FROM users WHERE name = ?}
-            """:
-                #=======================================================
-                var with: seq[string]
-                if checkAttr("with"):
-                    with = aWith.a.map((x) => $(x))
+        """:
+            #=======================================================
+            var with: seq[string]
+            if checkAttr("with"):
+                with = aWith.a.map((x) => $(x))
 
-                if x.dbKind == SqliteDatabase:
-                    if yKind == String:
-                        if (let got = execSqliteDb(x.sqlitedb, y.s, with); got[0]==ValidQueryResult):
-                            push(newBlock(got[1]))
-                    else:
-                        if (let got = execManySqliteDb(x.sqlitedb, y.a.map(proc (v:Value):string = (requireValue(v,{String},2); v.s)), with); got[0]==ValidQueryResult):
-                            push(newBlock(got[1]))
-                    
-                    if (hadAttr("id")):
-                        push(newInteger(getLastIdSqliteDb(x.sqlitedb)))
+            if x.dbKind == SqliteDatabase:
+                if yKind == String:
+                    if (let got = execSqliteDb(x.sqlitedb, y.s, with); got[0]==ValidQueryResult):
+                        push(newBlock(got[1]))
+                else:
+                    if (let got = execManySqliteDb(x.sqlitedb, y.a.map(proc (v:Value):string = (requireValue(v,{String},2); v.s)), with); got[0]==ValidQueryResult):
+                        push(newBlock(got[1]))
 
-                # elif x.dbKind == MysqlDatabase:
-                #     execMysqlDb(x.mysqldb, y.s)
+                if (hadAttr("id")):
+                    push(newInteger(getLastIdSqliteDb(x.sqlitedb)))
+
+            # elif x.dbKind == MysqlDatabase:
+            #     execMysqlDb(x.mysqldb, y.s)
 
     when not defined(WEB):
 
