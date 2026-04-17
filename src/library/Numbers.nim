@@ -1172,7 +1172,7 @@ proc defineModule*(moduleName: string) =
         alias       = unaliased,
         op          = opNop,
         rule        = PrefixPrecedence,
-        description = "get the sign of given number (-1, 0, or 1)",
+        description = "get the sign of given number",
         args        = {
             "number" : {Integer,Floating,Complex,Rational,Quantity}
         },
