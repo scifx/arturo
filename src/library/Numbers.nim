@@ -1168,6 +1168,56 @@ proc defineModule*(moduleName: string) =
             #=======================================================
             processTrigonometric(sech)
 
+    builtin "sign",
+        alias       = unaliased,
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "get the sign of given number (-1, 0, or 1)",
+        args        = {
+            "number" : {Integer,Floating,Complex,Rational,Quantity}
+        },
+        attrs       = NoAttrs,
+        returns     = {Integer},
+        example     = """
+            sign 5              ; => 1
+            sign 0              ; => 0
+            sign neg 3          ; => -1
+            ..........
+            sign 2.5            ; => 1
+            sign 0.0            ; => 0
+            sign neg 1.7        ; => -1
+            ..........
+            sign to :rational [3 4]         ; => 1
+            sign to :rational [neg 3 4]     ; => -1
+            ..........
+            sign to :complex @[pi 1]        ; => 1
+            sign to :complex [0 neg 1]      ; => -1
+        """:
+            #=======================================================
+            if xKind==Integer:
+                if x.iKind==NormalInteger:
+                    push(newInteger(sgn(x.i)))
+                else:
+                    when defined(WEB):
+                        if x.bi > big(0): push(newInteger(1))
+                        elif x.bi < big(0): push(newInteger(-1))
+                        else: push(newInteger(0))
+                    elif defined(GMP):
+                        push(newInteger(int(sign(x.bi))))
+            elif xKind==Floating:
+                push(newInteger(sgn(x.f)))
+            elif xKind==Rational:
+                push(newInteger(sign(x.rat)))
+            elif xKind==Complex:
+                if x.z.re > 0.0 or (x.z.re == 0.0 and x.z.im > 0.0):
+                    push(newInteger(1))
+                elif x.z.re < 0.0 or (x.z.re == 0.0 and x.z.im < 0.0):
+                    push(newInteger(-1))
+                else:
+                    push(newInteger(0))
+            else:
+                push(newInteger(sign(x.q.original)))
+
     builtin "sin",
         alias       = unaliased, 
         op          = opNop,
