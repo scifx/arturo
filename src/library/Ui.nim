@@ -56,41 +56,39 @@ proc defineModule*(moduleName: string) =
     # Functions
     #----------------------------
 
-    when defined(DIALOGS):
-        
-        builtin "alert",
-            alias       = unaliased,
-            op          = opNop,
-            rule        = PrefixPrecedence,
-            description = "show notification with given title and message",
-            args        = {
-                "title"     : {String},
-                "message"   : {String}
-            },
-            attrs       = {
-                "info"      : ({Logical},"show informational notification"),
-                "warning"   : ({Logical},"show notification as a warning"),
-                "error"     : ({Logical},"show notification as an error")
-            },
-            returns     = {Nothing},
-            example     = """
+    builtinWhen DIALOGS, "alert",
+        alias       = unaliased,
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "show notification with given title and message",
+        args        = {
+            "title"     : {String},
+            "message"   : {String}
+        },
+        attrs       = {
+            "info"      : ({Logical},"show informational notification"),
+            "warning"   : ({Logical},"show notification as a warning"),
+            "error"     : ({Logical},"show notification as an error")
+        },
+        returns     = {Nothing},
+        example     = """
             alert "Hello!" "This is a notification..."
             ; show an OS notification without any styling
 
             alert.error "Ooops!" "Something went wrong!"
             ; show an OS notification with an error message
-            """:
-                #=======================================================
-                var alertIcon = NoIcon
+        """:
+            #=======================================================
+            var alertIcon = NoIcon
 
-                if (hadAttr("info")):
-                    alertIcon = InfoIcon
-                elif (hadAttr("warning")):
-                    alertIcon = WarningIcon
-                elif (hadAttr("error")):
-                    alertIcon = ErrorIcon
+            if (hadAttr("info")):
+                alertIcon = InfoIcon
+            elif (hadAttr("warning")):
+                alertIcon = WarningIcon
+            elif (hadAttr("error")):
+                alertIcon = ErrorIcon
 
-                showAlertDialog(x.s, y.s, alertIcon)
+            showAlertDialog(x.s, y.s, alertIcon)
 
     builtinWhen CLIPBOARD, "clip",
         alias       = unaliased, 
