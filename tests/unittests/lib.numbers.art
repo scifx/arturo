@@ -639,3 +639,45 @@ do [
     passed
 
 ]
+
+
+topic « sign
+do [
+
+    ensure.that: "works with positive :integer" -> 1       = sign 5
+    ensure.that: "works with zero :integer"     -> 0       = sign 0
+    ensure.that: "works with negative :integer" -> (neg 1) = sign neg 3
+    passed
+
+    ensure.that: "works with positive :floating" -> 1       = sign 2.5
+    ensure.that: "works with zero :floating"     -> 0       = sign 0.0
+    ensure.that: "works with negative :floating" -> (neg 1) = sign neg 1.7
+    passed
+
+    ensure.that: "works with positive :rational" -> 1       = sign to :rational @[3 4]
+    ensure.that: "works with zero :rational"     -> 0       = sign to :rational @[0 4]
+    ensure.that: "works with negative :rational" -> (neg 1) = sign to :rational @[neg 3 4]
+    passed
+
+    ensure.that: "works with positive :complex" -> 1       = sign to :complex @[1.0 2.0]
+    ensure.that: "works with zero :complex"     -> 0       = sign to :complex @[0.0 0.0]
+    ensure.that: "works with negative :complex" -> (neg 1) = sign to :complex @[neg 1.0 2.0]
+    ensure.that: "imaginary-only positive :complex" -> 1       = sign to :complex @[0.0 2.0]
+    ensure.that: "imaginary-only negative :complex" -> (neg 1) = sign to :complex @[0.0 neg 2.0]
+    passed
+
+    ensure.that: "always returns :integer" -> every? @[
+        sign 5
+        sign 0
+        sign neg 3
+        sign 2.5
+        sign 0.0
+        sign neg 1.7
+        sign to :rational @[3 4]
+        sign to :rational @[neg 3 4]
+        sign to :complex @[1.0 2.0]
+        sign to :complex @[neg 1.0 2.0]
+    ] => integer?
+    passed
+
+]
