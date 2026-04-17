@@ -19,6 +19,8 @@
 # Libraries
 #=======================================
 
+import vm/lib
+
 # TODO(Databases) include SQLite support by default in MINI builds?
 #  this should be possible, provided that we can static-link SQLite
 #  labels: library,enhancement,open discussion
@@ -29,8 +31,6 @@ when defined(SQLITE):
 
 when not defined(WEB):
     import helpers/stores
-
-import vm/lib
 
 #=======================================
 # Definitions
