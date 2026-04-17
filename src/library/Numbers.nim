@@ -1187,11 +1187,11 @@ proc defineModule*(moduleName: string) =
             sign 0.0            ; => 0
             sign neg 1.7        ; => -1
             ..........
-            sign to :rational [3 4]         ; => 1
-            sign to :rational [neg 3 4]     ; => -1
+            sign to :rational [3 4]          ; => 1
+            sign to :rational @[neg 3 4]     ; => -1
             ..........
-            sign to :complex @[pi 1]        ; => 1
-            sign to :complex [0 neg 1]      ; => -1
+            sign to :complex @[pi 1]         ; => 1
+            sign to :complex @[0 neg 1]      ; => -1
         """:
             #=======================================================
             if xKind==Integer:
