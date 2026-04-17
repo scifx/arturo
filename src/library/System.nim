@@ -540,25 +540,20 @@ proc defineModule*(moduleName: string) =
             args        = {
                 "id"    : {Integer}
             },
-            attrs       = {
-                "code"  : ({Integer},"use given error code"),
-            },
+            attrs       = NoAttrs,
             returns     = {Nothing},
             example     = """
                 ; start process
                 pid: execute.async "someProcessThatDoesSomethingInTheBackground"
 
                 ; wait for 5 seconds
-                pause 5000 
+                pause 5000
 
                 ; terminate background process
                 terminate pid
             """:
                 #=======================================================
-                var errCode = QuitSuccess
                 let pid = x.i
-                if checkAttr("code"):
-                    errCode = aCode.i
 
                 # check if it's a process that has been
                 # created by us
@@ -575,9 +570,9 @@ proc defineModule*(moduleName: string) =
                     # if it's an external process,
                     # proceed with its termination
                     when defined(windows):
-                        discard terminateProcess(pid, errCode)
+                        discard terminateProcess(pid, QuitSuccess)
                     else:
-                        sendSignal(int32(pid), errCode)
+                        sendSignal(int32(pid), QuitSuccess)
 
     #----------------------------
     # Predicates
