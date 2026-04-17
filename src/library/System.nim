@@ -572,7 +572,8 @@ proc defineModule*(moduleName: string) =
                     when defined(windows):
                         discard terminateProcess(pid, QuitSuccess)
                     else:
-                        sendSignal(int32(pid), QuitSuccess)
+                        # send SIGTERM; signal 0 would only probe existence
+                        sendSignal(int32(pid), 15)
 
     #----------------------------
     # Predicates
