@@ -122,6 +122,18 @@ func isPositive*(x: VRational): bool =
         when defined(GMP):
             result = numerator(x.br) > 0
 
+func sign*(x: VRational): int =
+    if x.rKind == NormalRational:
+        if x.num > 0: result = 1
+        elif x.num < 0: result = -1
+        else: result = 0
+    else:
+        when defined(GMP):
+            let n = numerator(x.br)
+            if n > 0: result = 1
+            elif n < 0: result = -1
+            else: result = 0
+
 #=======================================
 # Templates
 #=======================================
