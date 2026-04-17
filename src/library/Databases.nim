@@ -76,36 +76,36 @@ proc defineModule*(moduleName: string) =
             # elif x.dbKind == MysqlDatabase:
             #     closeMysqlDb(x.mysqldb)
 
-    when defined(SQLITE):
-
-        builtin "open",
-            alias       = unaliased, 
-            op          = opNop,
-            rule        = PrefixPrecedence,
-            description = "opens a new database connection and returns database",
-            args        = {
-                "name"  : {String}
-            },
-            attrs       = {
-                "sqlite": ({Logical},"support for SQLite databases"),
-                "mysql" : ({Logical},"support for MySQL databases")
-            },
-            returns     = {Database},
-            example     = """
+    builtinWhen SQLITE, "open",
+        alias       = unaliased,
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "opens a new database connection and returns database",
+        args        = {
+            "name"  : {String}
+        },
+        attrs       = {
+            "sqlite": ({Logical},"support for SQLite databases"),
+            "mysql" : ({Logical},"support for MySQL databases")
+        },
+        returns     = {Database},
+        example     = """
             db: open "my.db"    ; opens an SQLite database named 'my.db'
-            """:
-                #=======================================================
-                var dbKind = SqliteDatabase
+        """:
+            #=======================================================
+            var dbKind = SqliteDatabase
 
-                if (hadAttr("mysql")):
-                    dbKind = MysqlDatabase
+            if (hadAttr("mysql")):
+                dbKind = MysqlDatabase
 
-                let dbName = x.s
+            let dbName = x.s
 
-                if dbKind == SqliteDatabase:
-                    push(newDatabase(openSqliteDb(dbName)))
-                # elif dbKind == MysqlDatabase:
-                #     push(newDatabase(openMysqlDb(dbName)))
+            if dbKind == SqliteDatabase:
+                push(newDatabase(openSqliteDb(dbName)))
+            # elif dbKind == MysqlDatabase:
+            #     push(newDatabase(openMysqlDb(dbName)))
+
+    when defined(SQLITE):
 
         builtin "query",
             alias       = unaliased, 
