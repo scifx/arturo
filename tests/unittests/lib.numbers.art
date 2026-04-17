@@ -681,3 +681,20 @@ do [
     passed
 
 ]
+
+topic « sin - with :quantity
+do [
+
+    ensure.that: "works with 0`degrees"  -> 0.0 = sin 0`degrees
+    ensure.that: "works with 0`radians"  -> 0.0 = sin 0`radians
+    ensure.that: "works with 30`degrees" -> 0.1 > abs 0.5 - sin 30`degrees
+    ensure.that: "works with 90`degrees" -> 0.1 > abs 1.0 - sin 90`degrees
+    ensure.that: "matches raw :floating" -> 0.00001 > abs (sin pi/6) - sin 30`degrees
+    passed
+
+    ensure.that: "cos 60`degrees ≈ 0.5" -> 0.1 > abs 0.5 - cos 60`degrees
+    ensure.that: "cos 0`degrees = 1.0"  -> 1.0 = cos 0`degrees
+    ensure.that: "tan 45`degrees ≈ 1.0" -> 0.00001 > abs 1.0 - tan 45`degrees
+    passed
+
+]

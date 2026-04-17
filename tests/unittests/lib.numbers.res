@@ -94,3 +94,7 @@
 [+] passed!
 [+] passed!
 [+] passed!
+
+>> sin - with :quantity
+[+] passed!
+[+] passed!
