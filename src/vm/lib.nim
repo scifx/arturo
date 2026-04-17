@@ -172,8 +172,8 @@ template builtin*(n: string, alias: VSymbol, op: OpCode, rule: PrecedenceKind, d
         makeBuiltin(n, alias, op, rule, description, args, attrs, returns, example):
             act
 
-template builtinUnless*(flag: untyped, n: string, alias: VSymbol, op: OpCode, rule: PrecedenceKind, description: string, args: untyped, attrs: static openArray[(string,(set[ValueKind],string))], returns: ValueSpec, example: string, act: untyped): untyped =
-    when not defined(flag):
+template builtinWhen*(flag: untyped, n: string, alias: VSymbol, op: OpCode, rule: PrecedenceKind, description: string, args: untyped, attrs: static openArray[(string,(set[ValueKind],string))], returns: ValueSpec, example: string, act: untyped): untyped =
+    when defined(flag):
         builtin(n, alias, op, rule, description, args, attrs, returns, example, act)
     else:
         makeBuiltin(n, alias, op, rule, description, args, attrs, returns, example):
