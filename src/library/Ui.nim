@@ -106,35 +106,35 @@ proc defineModule*(moduleName: string) =
             #=======================================================
             setClipboard(x.s)
 
-    when defined(DIALOGS):
-
-        builtin "dialog",
-            alias       = unaliased, 
-            op          = opNop,
-            rule        = PrefixPrecedence,
-            description = "show a file selection dialog and return selection",
-            args        = {
-                "title"     : {String}
-            },
-            attrs       = {
-                "folder"    : ({Logical},"select folders instead of files"),
-                "path"      : ({String},"use given starting path")      
-            },
-            returns     = {String},
-            example     = """
+    builtinWhen DIALOGS, "dialog",
+        alias       = unaliased,
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "show a file selection dialog and return selection",
+        args        = {
+            "title"     : {String}
+        },
+        attrs       = {
+            "folder"    : ({Logical},"select folders instead of files"),
+            "path"      : ({String},"use given starting path")
+        },
+        returns     = {String},
+        example     = """
             selectedFile: dialog "Select a file to open"
             ; gets full path for selected file, after dialog closes
             ..........
             selectedFolder: dialog.folder "Select a folder"
             ; same as above, only for folder selection
-            """:
-                #=======================================================
-                var path: string
-                let selectFiles = not hadAttr("folder")
-                if checkAttr("path"): 
-                    path = aPath.s
+        """:
+            #=======================================================
+            var path: string
+            let selectFiles = not hadAttr("folder")
+            if checkAttr("path"):
+                path = aPath.s
 
-                push newString(showSelectionDialog(x.s, path, selectFiles))
+            push newString(showSelectionDialog(x.s, path, selectFiles))
+
+    when defined(DIALOGS):
 
         builtin "popup",
             alias       = unaliased, 
