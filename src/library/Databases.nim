@@ -53,30 +53,30 @@ proc defineModule*(moduleName: string) =
     # Functions
     #----------------------------
 
-    when defined(SQLITE):
-
-        builtin "close",
-            alias       = unaliased, 
-            op          = opNop,
-            rule        = PrefixPrecedence,
-            description = "close given database",
-            args        = {
-                "database"  : {Database}
-            },
-            attrs       = NoAttrs,
-            returns     = {Nothing},
-            example     = """
+    builtinWhen SQLITE, "close",
+        alias       = unaliased,
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "close given database",
+        args        = {
+            "database"  : {Database}
+        },
+        attrs       = NoAttrs,
+        returns     = {Nothing},
+        example     = """
             db: open "my.db"    ; opens an SQLite database named 'my.db'
-            
+
             print query db "SELECT * FROM users"
 
             close db            ; and close it
-            """:
-                #=======================================================
-                if x.dbKind == SqliteDatabase:
-                    closeSqliteDb(x.sqlitedb)
-                # elif x.dbKind == MysqlDatabase:
-                #     closeMysqlDb(x.mysqldb)
+        """:
+            #=======================================================
+            if x.dbKind == SqliteDatabase:
+                closeSqliteDb(x.sqlitedb)
+            # elif x.dbKind == MysqlDatabase:
+            #     closeMysqlDb(x.mysqldb)
+
+    when defined(SQLITE):
 
         builtin "open",
             alias       = unaliased, 
