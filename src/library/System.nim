@@ -570,7 +570,11 @@ proc defineModule*(moduleName: string) =
                     # if it's an external process,
                     # proceed with its termination
                     when defined(windows):
-                        discard terminateProcess(pid, QuitSuccess)
+                        # TerminateProcess needs a HANDLE, not a PID
+                        let hProc = openProcess(PROCESS_TERMINATE, WINBOOL(0), DWORD(pid))
+                        if hProc != 0:
+                            discard terminateProcess(hProc, DWORD(QuitSuccess))
+                            discard closeHandle(hProc)
                     else:
                         # send SIGTERM; signal 0 would only probe existence
                         sendSignal(int32(pid), 15)
