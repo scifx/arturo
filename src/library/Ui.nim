@@ -134,32 +134,30 @@ proc defineModule*(moduleName: string) =
 
             push newString(showSelectionDialog(x.s, path, selectFiles))
 
-    when defined(DIALOGS):
-
-        builtin "popup",
-            alias       = unaliased, 
-            op          = opNop,
-            rule        = PrefixPrecedence,
-            description = "show popup dialog with given title and message and return result",
-            args        = {
-                "title"     : {String},
-                "message"   : {String}
-            },
-            attrs       = {
-                "info"              : ({Logical},"show informational popup"),
-                "warning"           : ({Logical},"show popup as a warning"),
-                "error"             : ({Logical},"show popup as an error"),
-                "question"          : ({Logical},"show popup as a question"),
-                "ok"                : ({Logical},"show an OK dialog (default)"),
-                "okCancel"          : ({Logical},"show an OK/Cancel dialog"),
-                "yesNo"             : ({Logical},"show a Yes/No dialog"),
-                "yesNoCancel"       : ({Logical},"show a Yes/No/Cancel dialog"),
-                "retryCancel"       : ({Logical},"show a Retry/Cancel dialog"),
-                "retryAbortIgnore"  : ({Logical},"show an Abort/Retry/Ignore dialog"),
-                "literal"           : ({Logical},"return the literal value of the pressed button")
-            },
-            returns     = {Logical,Literal},
-            example     = """
+    builtinWhen DIALOGS, "popup",
+        alias       = unaliased,
+        op          = opNop,
+        rule        = PrefixPrecedence,
+        description = "show popup dialog with given title and message and return result",
+        args        = {
+            "title"     : {String},
+            "message"   : {String}
+        },
+        attrs       = {
+            "info"              : ({Logical},"show informational popup"),
+            "warning"           : ({Logical},"show popup as a warning"),
+            "error"             : ({Logical},"show popup as an error"),
+            "question"          : ({Logical},"show popup as a question"),
+            "ok"                : ({Logical},"show an OK dialog (default)"),
+            "okCancel"          : ({Logical},"show an OK/Cancel dialog"),
+            "yesNo"             : ({Logical},"show a Yes/No dialog"),
+            "yesNoCancel"       : ({Logical},"show a Yes/No/Cancel dialog"),
+            "retryCancel"       : ({Logical},"show a Retry/Cancel dialog"),
+            "retryAbortIgnore"  : ({Logical},"show an Abort/Retry/Ignore dialog"),
+            "literal"           : ({Logical},"return the literal value of the pressed button")
+        },
+        returns     = {Logical,Literal},
+        example     = """
             popup "Hello!" "This is a popup message"
             ; shows a message dialog with an OK button
             ; when the dialog is closed, it returns: true
@@ -174,40 +172,40 @@ proc defineModule*(moduleName: string) =
             popup.okCancel.literal "Hello" "Click on a button"
             ; => 'ok (if user clicked OK)
             ; => 'cancel (if user clicked Cancel)
-            """:
-                #=======================================================
-                var popupIcon = NoIcon
-                var popupType = OKDialog
+        """:
+            #=======================================================
+            var popupIcon = NoIcon
+            var popupType = OKDialog
 
-                if (hadAttr("info")):
-                    popupIcon = InfoIcon
-                elif (hadAttr("warning")):
-                    popupIcon = WarningIcon
-                elif (hadAttr("error")):
-                    popupIcon = ErrorIcon
-                elif (hadAttr("question")):
-                    popupIcon = QuestionIcon
+            if (hadAttr("info")):
+                popupIcon = InfoIcon
+            elif (hadAttr("warning")):
+                popupIcon = WarningIcon
+            elif (hadAttr("error")):
+                popupIcon = ErrorIcon
+            elif (hadAttr("question")):
+                popupIcon = QuestionIcon
 
-                if (hadAttr("ok")):
-                    popupType = OKDialog
-                elif (hadAttr("okCancel")):
-                    popupType = OKCancelDialog
-                elif (hadAttr("yesNo")):
-                    popupType = YesNoDialog
-                elif (hadAttr("yesNoCancel")):
-                    popupType = YesNoCancelDialog
-                elif (hadAttr("retryCancel")):
-                    popupType = RetryCancelDialog
-                elif (hadAttr("retryAbortIgnore")):
-                    popupType = RetryAbortIgnoreDialog
+            if (hadAttr("ok")):
+                popupType = OKDialog
+            elif (hadAttr("okCancel")):
+                popupType = OKCancelDialog
+            elif (hadAttr("yesNo")):
+                popupType = YesNoDialog
+            elif (hadAttr("yesNoCancel")):
+                popupType = YesNoCancelDialog
+            elif (hadAttr("retryCancel")):
+                popupType = RetryCancelDialog
+            elif (hadAttr("retryAbortIgnore")):
+                popupType = RetryAbortIgnoreDialog
 
-                let res = showPopupDialog(x.s, y.s, popupType, popupIcon)
+            let res = showPopupDialog(x.s, y.s, popupType, popupIcon)
 
 
-                if (hadAttr("literal")):
-                    push newLiteral(getLiteralDialogResult(popupType, res))
-                else:
-                    push newLogical(getBooleanDialogResult(popupType, res))
+            if (hadAttr("literal")):
+                push newLiteral(getLiteralDialogResult(popupType, res))
+            else:
+                push newLogical(getBooleanDialogResult(popupType, res))
 
     when defined(CLIPBOARD):
 
