@@ -43,7 +43,7 @@
 
 when not defined(WEB):
     import re, terminal
-import sequtils, strformat, strutils, sugar, std/with
+import os, sequtils, strformat, strutils, sugar, std/with
 
 import helpers/strings
 import helpers/terminal
@@ -193,7 +193,10 @@ proc printCodePreview(e: VError) =
                     e.context.file = pcf.path
                 else:
                     e.context.file = currentFrame().path
-                
+
+            if e.context.file == "" or not fileExists(e.context.file):
+                return
+
             printError ""
             let fileContent = readFile(e.context.file)
             let codeLines = fileContent.splitLines()
