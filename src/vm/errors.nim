@@ -42,7 +42,7 @@
 #=======================================
 
 when not defined(WEB):
-    import re, terminal
+    import os, re, terminal
 import sequtils, strformat, strutils, sugar, std/with
 
 import helpers/strings
@@ -185,7 +185,7 @@ proc printErrorMessage(e: VError) =
     printError strip(indent(dedent(formatMessage(e.msg)), 2), chars={'\n'})
 
 proc printCodePreview(e: VError) =
-    when (not defined(NOERRORLINES)) and (not defined(BUNDLE)):
+    when (not defined(NOERRORLINES)) and (not defined(BUNDLE)) and (not defined(WEB)):
         if (not IsRepl) and (e.kind != CmdlineErr) and (e.kind != ProgramErr) :
             if e.context.file == "":
                 e.context.line = CurrentLine
@@ -193,7 +193,10 @@ proc printCodePreview(e: VError) =
                     e.context.file = pcf.path
                 else:
                     e.context.file = currentFrame().path
-                
+
+            if e.context.file == "" or not fileExists(e.context.file):
+                return
+
             printError ""
             let fileContent = readFile(e.context.file)
             let codeLines = fileContent.splitLines()
